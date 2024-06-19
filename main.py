@@ -173,9 +173,10 @@ Terminal = false
     command = ['sudo', 'mv', '/tmp/aseprite.desktop', desktop_file_path]
     subprocess.Popen(command, stdout=subprocess.PIPE).communicate()
 
+
 def give_execution_permission():
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')
-    command = ['chmod', '+x', desktop_file_path]
+    command = ['sudo', 'chmod', '+x', desktop_file_path]
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     output, error = process.communicate()
 

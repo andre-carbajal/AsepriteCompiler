@@ -23,8 +23,10 @@ The manual installation instructions for Aseprite are available at:
 Run the script using Python:
 
 ```bash
-sudo python3 main.py
+python3 main.py
 ```
+
+**WARNING: Do not run this script with sudo.**
 
 This script will:
 1. Check if the operating system is Linux.

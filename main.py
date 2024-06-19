@@ -41,7 +41,7 @@ def install_dependencies():
 
 def check_and_create_directory():
     base_directory = os.path.expanduser('~/deps')
-    skia_directory = os.path.join(base_directory, '~/deps/skia')
+    skia_directory = os.path.join(base_directory, 'skia')
 
     if not os.path.exists(base_directory):
         os.makedirs(base_directory)

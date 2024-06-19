@@ -1,6 +1,12 @@
 # Aseprite Installer for Linux
 
-This Python script automates the process of compile Aseprite on Linux systems.
+This script automates the installation process of Aseprite, whose original repository can be found at:
+
+[https://github.com/aseprite/aseprite](https://github.com/aseprite/aseprite)
+
+The manual installation instructions for Aseprite are available at:
+
+[https://github.com/aseprite/aseprite/blob/main/INSTALL.md](https://github.com/aseprite/aseprite/blob/main/INSTALL.md)
 
 ## Requirements
 
@@ -17,7 +23,7 @@ This Python script automates the process of compile Aseprite on Linux systems.
 Run the script using Python:
 
 ```bash
-python3 main.py
+sudo python3 main.py
 ```
 
 This script will:

@@ -153,14 +153,14 @@ def move_aseprite():
 
 def create_desktop_file():
     desktop_file = """
-    [Desktop Entry]
-    Type=Application
-    Name=Aseprite
-    Comment=Sprite editor compiled by Andre Carbajal's script
-    Exec=/opt/aseprite/aseprite/build/bin/aseprite
-    Terminal=false
-    Icon=/opt/aseprite/data/icons/ase256.png
-    Categories=Graphics;
+[Desktop Entry]
+Type=Application
+Name=Aseprite
+Comment=Sprite editor compiled by Andre Carbajals  script
+Exec=/opt/aseprite/build/bin/aseprite
+Terminal=false
+Icon=/opt/aseprite/data/icons/ase256.png
+Categories=Graphics
     """
 
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')

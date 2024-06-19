@@ -162,13 +162,16 @@ def create_desktop_file():
     Icon=/opt/aseprite/data/icons/ase256.png
     Categories=Graphics;
     """
+
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')
 
-    with open(desktop_file_path, 'w') as f:
+    # Write the desktop file content to a temporary file
+    with open('/tmp/aseprite.desktop', 'w') as f:
         f.write(desktop_file)
 
-    print(f"Created desktop file at {desktop_file_path}")
-
+    # Move the temporary file to the final location with sudo
+    command = ['sudo', 'mv', '/tmp/aseprite.desktop', desktop_file_path]
+    subprocess.Popen(command, stdout=subprocess.PIPE).communicate()
 
 def give_execution_permission():
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')

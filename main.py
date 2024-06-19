@@ -40,12 +40,20 @@ def install_dependencies():
 
 
 def check_and_create_directory():
-    directory = os.path.expanduser('~/deps/skia')
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-        print(f"Directory {directory} created.")
+    base_directory = os.path.expanduser('~/deps')
+    skia_directory = os.path.join(base_directory, '~/deps/skia')
+
+    if not os.path.exists(base_directory):
+        os.makedirs(base_directory)
+        print(f"Directory {base_directory} created.")
     else:
-        print(f"Directory {directory} already exists.")
+        print(f"Directory {base_directory} already exists.")
+
+    if not os.path.exists(skia_directory):
+        os.makedirs(skia_directory)
+        print(f"Directory {skia_directory} created.")
+    else:
+        print(f"Directory {skia_directory} already exists.")
 
 
 def download_skia(user, repo):
@@ -69,10 +77,12 @@ def download_skia(user, repo):
         f.write(download_response.content)
     print(f"Downloaded the latest release of {user}/{repo} to {filename}")
 
-    # Descomprimir el archivo
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall(directory)
     print(f"Extracted the zip file to {directory}")
+
+    os.remove(filename)
+    print(f"Deleted the downloaded file {filename}")
 
 
 def download_aseprite(user, repo):
@@ -80,7 +90,7 @@ def download_aseprite(user, repo):
     response = requests.get(url)
     data = response.json()
     for asset in data['assets']:
-        if asset['name'].endswith('.zip'):  # Asegúrate de que el archivo es un .zip
+        if asset['name'].endswith('.zip'):
             download_url = asset['browser_download_url']
             break
     else:
@@ -99,10 +109,12 @@ def download_aseprite(user, repo):
         f.write(download_response.content)
     print(f"Downloaded the latest release of {user}/{repo} to {filename}")
 
-    # Descomprimir el archivo
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall(directory)
     print(f"Extracted the zip file to {directory}")
+
+    os.remove(filename)
+    print(f"Deleted the downloaded file {filename}")
 
 
 def build_aseprite():
@@ -123,13 +135,11 @@ def move_aseprite():
     source_directory = os.path.expanduser('~/descargas/aseprite')
     target_directory = '/opt/aseprite'
 
-    # Crear el directorio de destino si no existe
     if not os.path.exists(target_directory):
         command = ['sudo', 'mkdir', '-p', target_directory]
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
         output, error = process.communicate()
 
-    # Mover los archivos
     for filename in os.listdir(source_directory):
         source_file = os.path.join(source_directory, filename)
         target_file = os.path.join(target_directory, filename)
@@ -174,10 +184,8 @@ if __name__ == '__main__':
 
     update_system()
     upgrade_system()
-    print('System updated and upgraded')
 
     install_dependencies()
-    print('Dependencies installed')
 
     check_and_create_directory()
 

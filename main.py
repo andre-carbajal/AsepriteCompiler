@@ -15,22 +15,28 @@ def check_os():
 
 
 def update_system():
+    print('Updating system...')
     command = ['sudo', 'apt', 'update']
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     output, error = process.communicate()
+    print('System updated.')
 
 
 def upgrade_system():
+    print('Upgrading system...')
     command = ['sudo', 'apt', 'upgrade', '-y']
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     output, error = process.communicate()
+    print('System upgraded.')
 
 
 def install_dependencies():
+    print('Installing dependencies...')
     command = ['sudo', 'apt-get', 'install', '-y', 'g++', 'clang', 'libc++-dev', 'libc++abi-dev', 'cmake',
                'ninja-build', 'libx11-dev', 'libxcursor-dev', 'libxi-dev', 'libgl1-mesa-dev', 'libfontconfig1-dev']
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     output, error = process.communicate()
+    print('Dependencies installed.')
 
 
 def check_and_create_directory():

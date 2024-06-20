@@ -154,13 +154,13 @@ def move_aseprite():
 def create_desktop_file():
     desktop_file = """
 [Desktop Entry]
-Name = Aseprite
-Type = Application
-Icon = /opt/aseprite/data/icons/ase256.png
-Exec = /opt/aseprite/build/bin/aseprite
-Comment = Compile by Andre Carbajal
-Categories = Graphics
-Terminal = false
+Name=Aseprite
+Type=Application
+Icon=/opt/aseprite/data/icons/ase256.png
+Exec=/opt/aseprite/build/bin/aseprite
+Comment=Compile by Andre Carbajal
+Categories=Graphics;
+Terminal=false
     """
 
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')

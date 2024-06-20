@@ -18,7 +18,10 @@ def check_os():
     if platform.system() != 'Linux':
         logging.error('This script is intended to be used on Linux systems only.')
         exit(1)
-    logging.info('Linux system detected.')
+    if os.getuid() == 0:
+        logging.error('This script should not be run as root.')
+        exit(1)
+    logging.info('OS successfully checked.')
 
 
 def execute_command(command, success_message, error_message):

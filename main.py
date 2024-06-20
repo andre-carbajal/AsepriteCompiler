@@ -183,6 +183,14 @@ def give_execution_permission():
     print(f"Given execution permission to {desktop_file_path}")
 
 
+def update_menu_cache():
+    command = ['sudo', 'update-desktop-database', '~/.local/share/applications/']
+    process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    output, error = process.communicate()
+
+    print("Updated the menu cache.")
+
+
 if __name__ == '__main__':
     check_os()
 
@@ -203,3 +211,4 @@ if __name__ == '__main__':
 
     create_desktop_file()
     give_execution_permission()
+    update_menu_cache()

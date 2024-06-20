@@ -36,15 +36,15 @@ def execute_command(command, success_message, error_message):
 def check_and_create_directory(base_directory, skia_directory):
     if not os.path.exists(base_directory):
         os.makedirs(base_directory)
-        logging.info(f"Directory {base_directory} created.")
+        logging.info("Directory %s created.", base_directory)
     else:
-        logging.info(f"Directory {base_directory} already exists.")
+        logging.info("Directory %s already exists.", base_directory)
 
     if not os.path.exists(skia_directory):
         os.makedirs(skia_directory)
-        logging.info(f"Directory {skia_directory} created.")
+        logging.info("Directory %s created.", base_directory)
     else:
-        logging.info(f"Directory {skia_directory} already exists.")
+        logging.info("Directory %s already exists.", base_directory)
 
 
 def download_file(user, repo, file_name, directory, file_extension=None):
@@ -56,7 +56,7 @@ def download_file(user, repo, file_name, directory, file_extension=None):
             download_url = asset['browser_download_url']
             break
     else:
-        logging.error(f"{file_name} not found in the latest release.")
+        logging.error("%s not found in the latest release.", file_name)
         exit(1)
 
     download_response = requests.get(download_url)
@@ -68,11 +68,11 @@ def download_file(user, repo, file_name, directory, file_extension=None):
 
     with open(filename, 'wb') as f:
         f.write(download_response.content)
-    logging.info(f"Downloaded the latest release of {user}/{repo} to {filename}")
+    logging.info("Downloaded the latest release of %s/%s to %s", user, repo, filename)
 
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall(directory)
-    logging.info(f"Extracted the zip file to {directory}")
+    logging.info("Extracted the zip file to %s", directory)
 
     os.remove(filename)
 

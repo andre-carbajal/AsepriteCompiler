@@ -17,7 +17,10 @@ def check_os():
     if platform.system() != 'Linux':
         print('This script is intended to be used on Linux systems only.')
         exit()
-    print('Linux system detected.')
+    if os.getuid() == 0:
+        print('This script should not be run as root.')
+        exit()
+    print('OS successfully checked.')
 
 
 def update_system():

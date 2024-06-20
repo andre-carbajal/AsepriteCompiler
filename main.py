@@ -1,11 +1,12 @@
-# script to install Aseprite in linux
-
+import logging
 import os
 import platform
 import subprocess
 import zipfile
 
 import requests
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 BASE_DIRECTORY = os.path.expanduser('~/deps')
 SKIA_DIRECTORY = os.path.join(BASE_DIRECTORY, 'skia')
@@ -15,103 +16,60 @@ ASEPRITE_DESKTOP_FILE = os.path.expanduser('~/.local/share/applications/aseprite
 
 def check_os():
     if platform.system() != 'Linux':
-        print('This script is intended to be used on Linux systems only.')
-        exit()
-    print('Linux system detected.')
+        logging.error('This script is intended to be used on Linux systems only.')
+        exit(1)
+    logging.info('Linux system detected.')
 
 
-def update_system():
-    print('Updating system started...')
-    command = ['sudo', 'apt', 'update']
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    output, error = process.communicate()
-    print('System updated.')
-
-
-def upgrade_system():
-    print('Upgrading system started...')
-    command = ['sudo', 'apt', 'upgrade', '-y']
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    output, error = process.communicate()
-    print('System upgraded.')
-
-
-def install_dependencies():
-    print('Installing dependencies for Aseprite... This may take a while')
-    command = ['sudo', 'apt-get', 'install', '-y', 'g++', 'clang', 'libc++-dev', 'libc++abi-dev', 'cmake',
-               'ninja-build', 'libx11-dev', 'libxcursor-dev', 'libxi-dev', 'libgl1-mesa-dev', 'libfontconfig1-dev']
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    output, error = process.communicate()
-    print('Dependencies installed.')
+def execute_command(command, success_message, error_message):
+    try:
+        subprocess.run(command, check=True)
+        logging.info(success_message)
+    except subprocess.CalledProcessError:
+        logging.error(error_message)
+        exit(1)
 
 
 def check_and_create_directory(base_directory, skia_directory):
     if not os.path.exists(base_directory):
         os.makedirs(base_directory)
-        print(f"Directory {base_directory} created.")
+        logging.info(f"Directory {base_directory} created.")
     else:
-        print(f"Directory {base_directory} already exists.")
+        logging.info(f"Directory {base_directory} already exists.")
 
     if not os.path.exists(skia_directory):
         os.makedirs(skia_directory)
-        print(f"Directory {skia_directory} created.")
+        logging.info(f"Directory {skia_directory} created.")
     else:
-        print(f"Directory {skia_directory} already exists.")
+        logging.info(f"Directory {skia_directory} already exists.")
 
 
-def download_skia(user, repo, skia_fila_name, skia_directory):
+def download_file(user, repo, file_name, directory, file_extension=None):
     url = f"https://api.github.com/repos/{user}/{repo}/releases/latest"
     response = requests.get(url)
     data = response.json()
     for asset in data['assets']:
-        if asset['name'] == skia_fila_name:
+        if file_extension and asset['name'].endswith(file_extension) or asset['name'] == file_name:
             download_url = asset['browser_download_url']
             break
     else:
-        print(f"{skia_fila_name} not found in the latest release.")
-        exit()
+        logging.error(f"{file_name} not found in the latest release.")
+        exit(1)
 
     download_response = requests.get(download_url)
 
-    filename = f"{skia_directory}/{skia_fila_name}"
+    filename = f"{directory}/{asset['name']}"
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     with open(filename, 'wb') as f:
         f.write(download_response.content)
-    print(f"Downloaded the latest release of {user}/{repo} to {filename}")
+    logging.info(f"Downloaded the latest release of {user}/{repo} to {filename}")
 
     with zipfile.ZipFile(filename, 'r') as zip_ref:
-        zip_ref.extractall(skia_directory)
-    print(f"Extracted the zip file to {skia_directory}")
-
-    os.remove(filename)
-
-
-def download_aseprite(user, repo, file_extension, aseprite_directory):
-    url = f"https://api.github.com/repos/{user}/{repo}/releases/latest"
-    response = requests.get(url)
-    data = response.json()
-    for asset in data['assets']:
-        if asset['name'].endswith(file_extension):
-            download_url = asset['browser_download_url']
-            break
-    else:
-        print("No .zip file found in the latest release.")
-        exit()
-
-    download_response = requests.get(download_url)
-
-    filename = f"{aseprite_directory}/{asset['name']}"
-
-    if not os.path.exists(aseprite_directory):
-        os.makedirs(aseprite_directory)
-
-    with open(filename, 'wb') as f:
-        f.write(download_response.content)
-    print(f"Downloaded the latest release of {user}/{repo} to {filename}")
-
-    with zipfile.ZipFile(filename, 'r') as zip_ref:
-        zip_ref.extractall(aseprite_directory)
-    print(f"Extracted the zip file to {aseprite_directory}")
+        zip_ref.extractall(directory)
+    logging.info(f"Extracted the zip file to {directory}")
 
     os.remove(filename)
 
@@ -135,19 +93,15 @@ def move_aseprite(aseprite_directory):
     target_directory = '/opt/aseprite'
 
     if not os.path.exists(target_directory):
-        command = ['sudo', 'mkdir', '-p', target_directory]
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-        output, error = process.communicate()
+        execute_command(['sudo', 'mkdir', '-p', target_directory], 'Directory created at /opt/aseprite directory.',
+                        'Failed to create /opt/aseprite directory.')
 
     for filename in os.listdir(source_directory):
         source_file = os.path.join(source_directory, filename)
         target_file = os.path.join(target_directory, filename)
 
-        command = ['sudo', 'mv', source_file, target_file]
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-        output, error = process.communicate()
-
-    print(f"Moved files from {source_directory} to {target_directory}")
+        execute_command(['sudo', 'mv', source_file, target_file], 'File move {source_file} to {target_file}',
+                        f'Failed to move {source_file} to {target_file}')
 
 
 def create_desktop_file(aseprite_desktop_file):
@@ -160,39 +114,36 @@ Comment=Compile by Andre Carbajal
 Categories=Graphics;
 Terminal=false"""
 
-
     with open('/tmp/aseprite.desktop', 'w') as f:
         f.write(desktop_file)
 
-    command = ['sudo', 'mv', '/tmp/aseprite.desktop', aseprite_desktop_file]
-    subprocess.Popen(command, stdout=subprocess.PIPE).communicate()
-
-
-def give_execution_permission(aseprite_desktop_file):
-    command = ['sudo', 'chmod', '+x', aseprite_desktop_file]
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    output, error = process.communicate()
-
-    print(f"Given execution permission to {aseprite_desktop_file}")
+    execute_command(['sudo', 'mv', '/tmp/aseprite.desktop', aseprite_desktop_file],
+                    'File moved to {aseprite_desktop_file}',
+                    'Failed to move file to {aseprite_desktop_file}')
 
 
 if __name__ == '__main__':
     check_os()
 
-    update_system()
-    upgrade_system()
-
-    install_dependencies()
+    execute_command(['sudo', 'apt', 'update'], 'System updated.', 'Failed to update system.')
+    execute_command(['sudo', 'apt', 'upgrade', '-y'], 'System upgraded.', 'Failed to upgrade system.')
+    execute_command(['sudo', 'apt-get', 'install', '-y', 'g++', 'clang', 'libc++-dev', 'libc++abi-dev', 'cmake',
+                     'ninja-build', 'libx11-dev', 'libxcursor-dev', 'libxi-dev', 'libgl1-mesa-dev',
+                     'libfontconfig1-dev'], 'Dependencies installed.', 'Failed to install dependencies.')
 
     check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
 
-    download_skia('aseprite', 'skia', 'Skia-Linux-Release-x64-libc++.zip', SKIA_DIRECTORY)
-
-    download_aseprite('aseprite', 'aseprite', '.zip', ASEPRITE_DIRECTORY)
+    download_file('aseprite', 'skia', 'Skia-Linux-Release-x64-libc++.zip', SKIA_DIRECTORY)
+    download_file('aseprite', 'aseprite', None, ASEPRITE_DIRECTORY, '.zip')
 
     build_aseprite(ASEPRITE_DIRECTORY)
 
     move_aseprite(ASEPRITE_DIRECTORY)
 
     create_desktop_file(ASEPRITE_DESKTOP_FILE)
-    give_execution_permission(ASEPRITE_DESKTOP_FILE)
+
+    execute_command(['sudo', 'chmod', '+x', ASEPRITE_DESKTOP_FILE],
+                    'Execution permission given to aseprite.desktop',
+                    'Failed to give execution permission to aseprite.desktop')
+
+    logging.info('Aseprite installed successfully.')

@@ -152,16 +152,14 @@ def move_aseprite():
 
 
 def create_desktop_file():
-    desktop_file = """
-[Desktop Entry]
+    desktop_file = """[Desktop Entry]
 Name=Aseprite
 Type=Application
 Icon=/opt/aseprite/data/icons/ase256.png
 Exec=/opt/aseprite/build/bin/aseprite
 Comment=Compile by Andre Carbajal
 Categories=Graphics;
-Terminal=false
-    """
+Terminal=false"""
 
     desktop_file_path = os.path.expanduser('~/.local/share/applications/aseprite.desktop')
 
@@ -181,14 +179,6 @@ def give_execution_permission():
     output, error = process.communicate()
 
     print(f"Given execution permission to {desktop_file_path}")
-
-
-def update_menu_cache():
-    command = ['sudo', 'update-desktop-database', '~/.local/share/applications/']
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    output, error = process.communicate()
-
-    print("Updated the menu cache.")
 
 
 if __name__ == '__main__':
@@ -211,4 +201,3 @@ if __name__ == '__main__':
 
     create_desktop_file()
     give_execution_permission()
-    update_menu_cache()

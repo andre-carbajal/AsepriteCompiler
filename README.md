@@ -1,4 +1,4 @@
-# Aseprite Installer for Linux
+# Aseprite Installer for Linux(Debian-based)
 
 This script automates the installation process of Aseprite, whose original repository can be found at:
 

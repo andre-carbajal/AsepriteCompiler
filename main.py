@@ -77,7 +77,7 @@ def download_file(user, repo, file_name, directory, file_extension=None):
     os.remove(filename)
 
 
-def build_aseprite(aseprite_directory):
+def build_linux_aseprite(aseprite_directory):
     command = f"""
     cd {aseprite_directory} && \
     mkdir build && \
@@ -103,8 +103,8 @@ def move_aseprite(aseprite_directory):
         source_file = os.path.join(source_directory, filename)
         target_file = os.path.join(target_directory, filename)
 
-        execute_command(['sudo', 'mv', source_file, target_file], 'File move {source_file} to {target_file}',
-                        f'Failed to move {source_file} to {target_file}')
+        execute_command(['sudo', 'mv', source_file, target_file], 'File move' + source_file + 'to' + target_file,
+                        'Failed to move' + source_file + 'to' + target_file)
 
 
 def create_desktop_file(aseprite_desktop_file):

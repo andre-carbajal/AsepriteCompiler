@@ -256,7 +256,7 @@ if __name__ == '__main__':
 
         bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, 'Aseprite-v1.3.6-trial-macOS.dmg', ASEPRITE_DIRECTORY)
 
-        execute_command(['sudo', 'cp', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
+        execute_command(['sudo', 'cp', '-r', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
                         'Aseprite.app copied to /Applications directory.',
                         'Failed to copy Aseprite.app to /Applications directory.')
 

@@ -61,7 +61,13 @@ def check_and_create_directory(base_directory, skia_directory):
 
 def download_file(user, repo, file_name, directory, file_extension=None):
     url = f"https://api.github.com/repos/{user}/{repo}/releases/latest"
-    response = requests.get(url)
+
+    try:
+        response = requests.get(url, timeout=10)
+    except requests.exceptions.Timeout:
+        logging.error("Timeout error while trying to get the latest release of %s/%s", user, repo)
+        exit(1)
+
     data = response.json()
     for asset in data['assets']:
         if file_extension and asset['name'].endswith(file_extension) or asset['name'] == file_name:

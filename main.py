@@ -26,17 +26,12 @@ def execute_command(command, success_message, error_message):
 
 def execute_command_shell(command, success_message, error_message):
     try:
-        subprocess.run(command, shell=True, check=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
         logging.info(success_message)
     except subprocess.CalledProcessError:
         logging.error(error_message)
         exit(1)
-
-
-def execute_a_command(command, success_message, error_message):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    process.wait()
-    logging.info(success_message)
 
 
 def is_xcode_installed():
@@ -132,7 +127,7 @@ def build_macos_arm_aseprite(aseprite_directory):
     process.wait()
 
 
-def move_aseprite(aseprite_directory):
+def move_linux_aseprite(aseprite_directory):
     source_directory = os.path.expanduser(aseprite_directory)
     target_directory = '/opt/aseprite'
 
@@ -187,8 +182,8 @@ def bundle_macos_aseprite(bundle_macos_directory, file_name, aseprite_directory)
 
     execute_command(['cp', '-rf', mount_directory + '/Aseprite.app', bundle_macos_directory + '/Aseprite.app'],
                     'Aseprite.app copied.', 'Failed to copy Aseprite.app.')
-    execute_a_command(['hdiutil', 'detach', mount_directory], 'Disk image detached.',
-                      'Failed to detach disk image.')
+    execute_command_shell(['hdiutil', 'detach', mount_directory], 'Disk image detached.',
+                          'Failed to detach disk image.')
     execute_command(['rm', '-rf', bundle_macos_directory + 'Aseprite.app/Contents/MacOS/aseprite'],
                     'Contents/MacOS removed.', 'Failed to remove Contents/MacOS.')
     execute_command(['cp', '-r', aseprite_directory + '/build/bin/aseprite',
@@ -201,63 +196,68 @@ def bundle_macos_aseprite(bundle_macos_directory, file_name, aseprite_directory)
                     'Failed to copy data.')
 
 
+def install_on_linux():
+    execute_command(['sudo', 'apt', 'update'], 'System updated.', 'Failed to update system.')
+    execute_command(['sudo', 'apt', 'upgrade', '-y'], 'System upgraded.', 'Failed to upgrade system.')
+    execute_command(['sudo', 'apt-get', 'install', '-y', 'g++', 'clang', 'libc++-dev', 'libc++abi-dev', 'cmake',
+                     'ninja-build', 'libx11-dev', 'libxcursor-dev', 'libxi-dev', 'libgl1-mesa-dev',
+                     'libfontconfig1-dev'], 'Dependencies installed.', 'Failed to install dependencies.')
+
+    check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
+
+    download_file('aseprite', 'skia', 'Skia-Linux-Release-x64-libc++.zip', SKIA_DIRECTORY)
+    download_file('aseprite', 'aseprite', None, ASEPRITE_DIRECTORY, '.zip')
+
+    build_linux_aseprite(ASEPRITE_DIRECTORY)
+
+    move_linux_aseprite(ASEPRITE_DIRECTORY)
+
+    create_desktop_file(ASEPRITE_DESKTOP_FILE)
+
+    execute_command(['sudo', 'chmod', '+x', ASEPRITE_DESKTOP_FILE],
+                    'Execution permission given to aseprite.desktop',
+                    'Failed to give execution permission to aseprite.desktop')
+
+
+def install_on_macos():
+    if is_xcode_installed():
+        logging.info('Xcode command line tools already installed')
+    else:
+        execute_command(['xcode-select', '--install'], 'Xcode command line tools installed.',
+                        'Failed to install Xcode command line tools.')
+
+    execute_command(['brew', 'install', 'cmake', 'ninja'], 'Dependencies installed.',
+                    'Failed to install dependencies.')
+
+    check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
+
+    download_file('aseprite', 'aseprite', None, ASEPRITE_DIRECTORY, '.zip')
+
+    if platform.machine() == 'x86_64':
+        download_file('aseprite', 'skia', 'Skia-macOS-Release-x64.zip', SKIA_DIRECTORY)
+        build_macos_x86_64_aseprite(ASEPRITE_DIRECTORY)
+    elif 'arm' in platform.machine():
+        download_file('aseprite', 'skia', 'Skia-macOS-Release-arm64.zip', SKIA_DIRECTORY)
+        build_macos_arm_aseprite(ASEPRITE_DIRECTORY)
+
+    bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, 'Aseprite-v1.3.6-trial-macOS.dmg', ASEPRITE_DIRECTORY)
+
+    execute_command(['sudo', 'cp', '-r', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
+                    'Aseprite.app copied to /Applications directory.',
+                    'Failed to copy Aseprite.app to /Applications directory.')
+
+
 if __name__ == '__main__':
     if os.getuid() == 0:
         logging.error('This script should not be run as root.')
         exit(1)
 
-    if platform.system() != 'Linux' and platform.system() != 'Darwin':
-        logging.error('This script is only for Linux and MacOS.')
-        exit(1)
-
     if platform.system() == 'Linux':
-        execute_command(['sudo', 'apt', 'update'], 'System updated.', 'Failed to update system.')
-        execute_command(['sudo', 'apt', 'upgrade', '-y'], 'System upgraded.', 'Failed to upgrade system.')
-        execute_command(['sudo', 'apt-get', 'install', '-y', 'g++', 'clang', 'libc++-dev', 'libc++abi-dev', 'cmake',
-                         'ninja-build', 'libx11-dev', 'libxcursor-dev', 'libxi-dev', 'libgl1-mesa-dev',
-                         'libfontconfig1-dev'], 'Dependencies installed.', 'Failed to install dependencies.')
-
-        check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
-
-        download_file('aseprite', 'skia', 'Skia-Linux-Release-x64-libc++.zip', SKIA_DIRECTORY)
-        download_file('aseprite', 'aseprite', None, ASEPRITE_DIRECTORY, '.zip')
-
-        build_linux_aseprite(ASEPRITE_DIRECTORY)
-
-        move_aseprite(ASEPRITE_DIRECTORY)
-
-        create_desktop_file(ASEPRITE_DESKTOP_FILE)
-
-        execute_command(['sudo', 'chmod', '+x', ASEPRITE_DESKTOP_FILE],
-                        'Execution permission given to aseprite.desktop',
-                        'Failed to give execution permission to aseprite.desktop')
-
-    if platform.system() == 'Darwin':
-
-        if is_xcode_installed():
-            logging.info('Xcode command line tools already installed')
-        else:
-            execute_command(['xcode-select', '--install'], 'Xcode command line tools installed.',
-                            'Failed to install Xcode command line tools.')
-
-        execute_command(['brew', 'install', 'cmake', 'ninja'], 'Dependencies installed.',
-                        'Failed to install dependencies.')
-
-        check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
-
-        download_file('aseprite', 'aseprite', None, ASEPRITE_DIRECTORY, '.zip')
-
-        if platform.machine() == 'x86_64':
-            download_file('aseprite', 'skia', 'Skia-macOS-Release-x64.zip', SKIA_DIRECTORY)
-            build_macos_x86_64_aseprite(ASEPRITE_DIRECTORY)
-        elif 'arm' in platform.machine():
-            download_file('aseprite', 'skia', 'Skia-macOS-Release-arm64.zip', SKIA_DIRECTORY)
-            build_macos_arm_aseprite(ASEPRITE_DIRECTORY)
-
-        bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, 'Aseprite-v1.3.6-trial-macOS.dmg', ASEPRITE_DIRECTORY)
-
-        execute_command(['sudo', 'cp', '-r', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
-                        'Aseprite.app copied to /Applications directory.',
-                        'Failed to copy Aseprite.app to /Applications directory.')
+        install_on_linux()
+    elif platform.system() == 'Darwin':
+        install_on_macos()
+    else:
+        logging.error('Unsupported operating system.')
+        exit(1)
 
     logging.info('Aseprite installed successfully.')

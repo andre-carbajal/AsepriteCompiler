@@ -17,11 +17,26 @@ BUNDLE_MACOS_DIRECTORY = os.path.expanduser('/tmp/bundle')
 
 def execute_command(command, success_message, error_message):
     try:
+        subprocess.run(command, check=True)
+        logging.info(success_message)
+    except subprocess.CalledProcessError:
+        logging.error(error_message)
+        exit(1)
+
+
+def execute_command_shell(command, success_message, error_message):
+    try:
         subprocess.run(command, shell=True, check=True)
         logging.info(success_message)
     except subprocess.CalledProcessError:
         logging.error(error_message)
         exit(1)
+
+
+def execute_a_command(command, success_message, error_message):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.wait()
+    logging.info(success_message)
 
 
 def is_xcode_installed():
@@ -166,15 +181,24 @@ def bundle_macos_aseprite(bundle_macos_directory, file_name, aseprite_directory)
     if not os.path.exists(mount_directory):
         os.makedirs(mount_directory)
 
-    execute_command(f"""yes qy | hdiutil attach -quiet -nobrowse -noverify -noautoopen -mountpoint {mount_directory} {file_directory}""",
-                    'Disk image mounted.', 'Failed to mount disk image.')
+    execute_command_shell(
+        f"""yes qy | hdiutil attach -quiet -nobrowse -noverify -noautoopen -mountpoint {mount_directory} {file_directory}""",
+        'Disk image mounted.', 'Failed to mount disk image.')
 
-    execute_command(['cp', '-rf', mount_directory + '/Aseprite.app', bundle_macos_directory + '/Aseprite.app'], 'Aseprite.app copied.', 'Failed to copy Aseprite.app.')
-    execute_command(['hdiutil', 'detach', mount_directory], 'Disk image detached.', 'Failed to detach disk image.')
-    execute_command(['rm', '-rf', bundle_macos_directory + 'Aseprite.app/Contents/MacOS/aseprite'], 'Contents/MacOS removed.', 'Failed to remove Contents/MacOS.')
-    execute_command(['cp', '-r', aseprite_directory + '/build/bin/aseprite', bundle_macos_directory + 'Aseprite.app/Contents/MacOS/aseprite'], 'aseprite copied.', 'Failed to copy aseprite.')
-    execute_command(['rm', '-rf', bundle_macos_directory + 'Aseprite.app/Contents/Resources/data'], 'Contents/Resources/data removed.', 'Failed to remove Contents/Resources/data.')
-    execute_command(['cp', '-r', aseprite_directory + '/build/bin/data', bundle_macos_directory + 'Aseprite.app/Contents/Resources/data'], 'data copied.', 'Failed to copy data.')
+    execute_command(['cp', '-rf', mount_directory + '/Aseprite.app', bundle_macos_directory + '/Aseprite.app'],
+                    'Aseprite.app copied.', 'Failed to copy Aseprite.app.')
+    execute_a_command(['hdiutil', 'detach', mount_directory], 'Disk image detached.',
+                      'Failed to detach disk image.')
+    execute_command(['rm', '-rf', bundle_macos_directory + 'Aseprite.app/Contents/MacOS/aseprite'],
+                    'Contents/MacOS removed.', 'Failed to remove Contents/MacOS.')
+    execute_command(['cp', '-r', aseprite_directory + '/build/bin/aseprite',
+                     bundle_macos_directory + '/Aseprite.app/Contents/MacOS/aseprite'], 'aseprite copied.',
+                    'Failed to copy aseprite.')
+    execute_command(['rm', '-rf', bundle_macos_directory + 'Aseprite.app/Contents/Resources/data'],
+                    'Contents/Resources/data removed.', 'Failed to remove Contents/Resources/data.')
+    execute_command(['cp', '-r', aseprite_directory + '/build/bin/data',
+                     bundle_macos_directory + '/Aseprite.app/Contents/Resources/data'], 'data copied.',
+                    'Failed to copy data.')
 
 
 if __name__ == '__main__':
@@ -213,9 +237,11 @@ if __name__ == '__main__':
         if is_xcode_installed():
             logging.info('Xcode command line tools already installed')
         else:
-            execute_command(['xcode-select', '--install'], 'Xcode command line tools installed.', 'Failed to install Xcode command line tools.')
+            execute_command(['xcode-select', '--install'], 'Xcode command line tools installed.',
+                            'Failed to install Xcode command line tools.')
 
-        execute_command(['brew', 'install', 'cmake', 'ninja'], 'Dependencies installed.', 'Failed to install dependencies.')
+        execute_command(['brew', 'install', 'cmake', 'ninja'], 'Dependencies installed.',
+                        'Failed to install dependencies.')
 
         check_and_create_directory(BASE_DIRECTORY, SKIA_DIRECTORY)
 
@@ -230,6 +256,8 @@ if __name__ == '__main__':
 
         bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, 'Aseprite-v1.3.6-trial-macOS.dmg', ASEPRITE_DIRECTORY)
 
-        execute_command(['sudo', 'cp', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'], 'Aseprite.app copied to /Applications directory.', 'Failed to copy Aseprite.app to /Applications directory.')
+        execute_command(['sudo', 'cp', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
+                        'Aseprite.app copied to /Applications directory.',
+                        'Failed to copy Aseprite.app to /Applications directory.')
 
     logging.info('Aseprite installed successfully.')

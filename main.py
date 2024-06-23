@@ -26,7 +26,7 @@ def execute_command(command, success_message, error_message):
 
 def execute_command_shell(command, success_message, error_message):
     try:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()
         logging.info(success_message)
     except subprocess.CalledProcessError:

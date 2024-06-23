@@ -224,6 +224,8 @@ def install_on_linux():
                     'Execution permission given to aseprite.desktop',
                     'Failed to give execution permission to aseprite.desktop')
 
+    logging.info('Aseprite installed successfully.')
+
 
 def install_on_macos():
     if is_xcode_installed():
@@ -252,6 +254,8 @@ def install_on_macos():
                     'Aseprite.app copied to /Applications directory.',
                     'Failed to copy Aseprite.app to /Applications directory.')
 
+    logging.info('Aseprite installed successfully.')
+
 
 if __name__ == '__main__':
     if os.getuid() == 0:
@@ -265,5 +269,3 @@ if __name__ == '__main__':
     else:
         logging.error('Unsupported operating system.')
         exit(1)
-
-    logging.info('Aseprite installed successfully.')

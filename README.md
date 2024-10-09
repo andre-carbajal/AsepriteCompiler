@@ -18,13 +18,16 @@ The manual installation instructions for Aseprite are available at:
 
 1. Clone this repository to your local machine.
 2. Navigate to the directory containing the script.
-
-## Usage
-
-Run the script using Python:
-
+3. Install the required dependencies using the following command:
 ```bash
-python3 main.py
+pip3 install -r requirements.txt
+```
+
+### Usage
+
+If you **have not used this script before**, use the following command to **install Aseprite**:
+```bash
+python3 install.py
 ```
 
 **WARNING: Do not run this script with sudo.**

@@ -30,6 +30,16 @@ If you **have not used this script before**, use the following command to **inst
 python3 install.py
 ```
 
+If you **have used this script before** and want to **update the Aseprite version**, use the following command:
+```bash
+sudo python3 update.py
+```
+
+If you **want to uninstall Aseprite**, use the following command:
+```bash
+sudo python3 uninstall.py
+```
+
 **WARNING: Do not run this script with sudo.**
 
 ### On Linux this script will:

@@ -8,6 +8,7 @@ import requests
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
+FILE_VERSION = '1.3.9.1'
 BASE_DIRECTORY = os.path.expanduser('~/deps')
 SKIA_DIRECTORY = os.path.join(BASE_DIRECTORY, 'skia')
 ASEPRITE_DIRECTORY = os.path.expanduser('/tmp/aseprite')
@@ -248,7 +249,7 @@ def install_on_macos():
         download_file('aseprite', 'skia', 'Skia-macOS-Release-arm64.zip', SKIA_DIRECTORY)
         build_macos_arm_aseprite(ASEPRITE_DIRECTORY)
 
-    bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, 'Aseprite-v1.3.9.1-trial-macOS.dmg', ASEPRITE_DIRECTORY)
+    bundle_macos_aseprite(BUNDLE_MACOS_DIRECTORY, f'Aseprite-v{FILE_VERSION}-trial-macOS.dmg', ASEPRITE_DIRECTORY)
 
     execute_command(['sudo', 'cp', '-r', BUNDLE_MACOS_DIRECTORY + '/Aseprite.app', '/Applications/Aseprite.app'],
                     'Aseprite.app copied to /Applications directory.',

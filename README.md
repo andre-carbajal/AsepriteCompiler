@@ -40,9 +40,7 @@ If you **want to uninstall Aseprite**, use the following command:
 sudo python3 uninstall.py
 ```
 
-**WARNING: Do not run this script with sudo.**
-
-### On Linux this script will:
+### On Linux installation  this script will:
   1. Check if the operating system is Linux. 
   2. Update and upgrade the system.
   3. Install necessary dependencies. 
@@ -53,7 +51,7 @@ sudo python3 uninstall.py
   8. Create a desktop file for Aseprite. 
   9. Give execution permission to the desktop file. 
 
-### On MacOs this script will:
+### On MacOs installation this script will:
   1. Check if the operating system is MacOS.
   2. Install necessary dependencies.
   3. Download and install Skia.

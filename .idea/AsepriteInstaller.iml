@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (gpdownloadsnotion)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10.12 WSL (Ubuntu): (/home/anvian/.virtualenvs/AsepriteCompiler/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

@@ -23,8 +23,7 @@ log_error() {
 # Usage: execute_command <command> <arg1> <arg2> ...
 execute_command() {
     log_info "Executing: $*"
-    "$@"
-    if [ $? -ne 0 ]; then
+    if ! "$@"; then
         log_error "Command failed: $*"
     fi
 }
@@ -73,10 +72,11 @@ download_file() {
     check_command "curl" "curl is not installed. Please install it to proceed."
     check_command "unzip" "unzip is not installed. Please install it to proceed."
 
-    local url="https://api.github.com/repos/${user}/${repo}/releases/latest"
+    local url
+    url="https://api.github.com/repos/${user}/${repo}/releases/latest"
     log_info "Fetching latest release information from: ${url}"
-    local response=$(curl -s --fail "$url") # --fail ensures curl exits with non-zero on HTTP errors
-    if [ $? -ne 0 ]; then
+    local response
+    if ! response=$(curl -s --fail "$url"); then
         log_error "Failed to fetch release information for ${user}/${repo}. Check repository name or network connectivity."
     fi
 
@@ -86,11 +86,11 @@ download_file() {
     # Parse the JSON response to find the correct asset
     # This approach is robust for simple cases but could be replaced by 'jq' for complex JSON parsing
     if [ -n "$specific_file_name" ]; then
-        asset_name=$(echo "$response" | grep -o '"name": "[^"]*'${specific_file_name}'[^"]*"' | sed 's/"name": "\(.*\)"/\1/')
-        download_url=$(echo "$response" | grep -o '"browser_download_url": "[^"]*'${specific_file_name}'[^"]*"' | sed 's/"browser_download_url": "\(.*\)"/\1/')
+        asset_name=$(echo "$response" | grep -o '"name": "[^"]*'"${specific_file_name}"'[^"]*"' | sed 's/"name": "\(.*\)"/\1/')
+        download_url=$(echo "$response" | grep -o '"browser_download_url": "[^"]*'"${specific_file_name}"'[^"]*"' | sed 's/"browser_download_url": "\(.*\)"/\1/')
     elif [ -n "$file_extension" ]; then
-        asset_name=$(echo "$response" | grep -o '"name": "[^"]*'${file_extension}'[^"]*"' | sed 's/"name": "\(.*\)"/\1/' | head -n 1)
-        download_url=$(echo "$response" | grep -o '"browser_download_url": "[^"]*'${file_extension}'[^"]*"' | sed 's/"browser_download_url": "\(.*\)"/\1/' | head -n 1)
+        asset_name=$(echo "$response" | grep -o '"name": "[^"]*'"${file_extension}"'[^"]*"' | sed 's/"name": "\(.*\)"/\1/' | head -n 1)
+        download_url=$(echo "$response" | grep -o '"browser_download_url": "[^"]*'"${file_extension}"'[^"]*"' | sed 's/"browser_download_url": "\(.*\)"/\1/' | head -n 1)
     fi
 
     if [ -z "$download_url" ]; then
@@ -284,6 +284,13 @@ bundle_macos_aseprite() {
     execute_command cp -r "${aseprite_directory}/build/bin/data" "${bundle_macos_directory}/Aseprite.app/Contents/Resources/data"
 }
 
+# Remove build dependencies and temp files
+cleanup() {
+    log_info "Removing build directories..."
+    rm -rf "$HOME/deps" /tmp/aseprite /tmp/bundle
+    log_info "Removed build directories."
+}
+
 # Main installation function for Linux
 install_on_linux() {
     log_info "--- Starting Aseprite installation on Linux ---"
@@ -340,7 +347,8 @@ install_on_macos() {
 
     download_file 'aseprite' 'aseprite' '' "${ASEPRITE_DIRECTORY}" '.zip'
 
-    local machine_arch=$(uname -m)
+    local machine_arch
+    machine_arch=$(uname -m)
     if [ "${machine_arch}" == "x86_64" ]; then
         download_file 'aseprite' 'skia' 'Skia-macOS-Release-x64.zip' "${SKIA_DIRECTORY}" ''
         build_macos_x86_64_aseprite "${ASEPRITE_DIRECTORY}"
@@ -375,3 +383,5 @@ case "$(uname -s)" in
         log_error "Unsupported operating system. This script currently only supports Linux and macOS."
         ;;
 esac
+
+cleanup
